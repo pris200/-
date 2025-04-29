@@ -92,46 +92,48 @@
   let mines_amount = 1, get_signal_timeout = false;
 
   async function getSignal() {
-  if (get_signal_timeout) return;
-  get_signal_timeout = true;
+    if (get_signal_timeout) return;
+    get_signal_timeout = true;
 
-  /* Сброс предыдущего состояния */
-  $('.buttons').addClass('buttons-blocked');
-  $('.mine-selected, .mine-trap, .mines-open-anim')
-    .removeClass('mine-selected mine-trap mines-open-anim');
+    /* Сброс предыдущего состояния */
+    $('.buttons').addClass('buttons-blocked');
+    $('.mine-selected, .mine-trap, .mines-open-anim')
+      .removeClass('mine-selected mine-trap mines-open-anim');
 
-  /* Лоадер */
-  $('.mines-board-loading').css('opacity', 1);
-  await sleep(random(1500, 5000));
-  $('.mines-board-loading').css('opacity', 0);
-  await sleep(600);
+    /* Лоадер */
+    $('.mines-board-loading').css('opacity', 1);
+    await sleep(random(1500, 5000));
+    $('.mines-board-loading').css('opacity', 0);
+    await sleep(600);
 
-  const total = 25;
-  const cellsToOpen = [];
+    /* Расставляем ловушки */
+    const total = 25;
+    const traps = [];
+    while (traps.length < mines_amount) {
+      const r = random(1, total);
+      if (!traps.includes(r)) traps.push(r);
+    }
 
-  // выбираем случайные клетки для открытия (без повторов)
-  while (cellsToOpen.length < mines_amount) {
-    const r = random(1, total);
-    if (!cellsToOpen.includes(r)) cellsToOpen.push(r);
+    /* Открываем все ячейки с одинаковой анимацией */
+    for (let i = 1; i <= total; i++) {
+      const $cell = $('#mine' + i);
+
+      // стартуем анимацию «раскрытия»
+      $cell.addClass('mines-open-anim');
+      await sleep(400);          // половина времени openAnim
+
+      if (traps.includes(i)) {
+        $cell.addClass('mine-trap');     // мина
+      } else {
+        $cell.addClass('mine-selected'); // безопасная
+      }
+
+      await sleep(500);          // короткая пауза между ячейками
+    }
+
+    $('.buttons').removeClass('buttons-blocked');
+    get_signal_timeout = false;
   }
-
-  // открываем ТОЛЬКО выбранные клетки (ВСЕ безопасные)
-  for (let i = 0; i < cellsToOpen.length; i++) {
-    const cellNum = cellsToOpen[i];
-    const $cell = $('#mine' + cellNum);
-
-    $cell.addClass('mines-open-anim');
-    await sleep(400); // времен openAnim
-
-    $cell.addClass('mine-selected'); // 
-
-    await sleep(500); // пауза между клетками
-  }
-
-  $('.buttons').removeClass('buttons-blocked');
-  get_signal_timeout = false;
-}
-
 
   
 
